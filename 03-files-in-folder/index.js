@@ -9,20 +9,23 @@ class DirInfo {
     process.on('exit', () => process.stdout.write('\nGood Luck, Have Fun!'));
   }
   getDirInfo() {
-    fs.readdir(this.fullPath, { withFileTypes: true }, (e, files) => {
-      if (e) process.stdout.write(e);
-      files.forEach((file) => {
-        if (file.isFile())
-          fs.stat(path.join(this.fullPath, file.name), (err, stats) => {
-            if (!err) {
-              let fname = file.name.split('.');
-              process.stdout.write(
-                `${fname[0]} - ${fname[1]} - ${this.bytesToSize(stats.size)}\n`
-              );
-            }
-          });
+    fs.promises
+      .readdir(this.fullPath, { withFileTypes: true })
+      .then((files) => {
+        for (const file of files) {
+          if (file.isFile())
+            fs.stat(path.join(this.fullPath, file.name), (err, stats) => {
+              if (!err) {
+                let fname = file.name.split('.');
+                process.stdout.write(
+                  `${fname[0]} - ${fname[1]} - ${this.bytesToSize(
+                    stats.size
+                  )}\n`
+                );
+              }
+            });
+        }
       });
-    });
   }
 
   bytesToSize(bytes) {
