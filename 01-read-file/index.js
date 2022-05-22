@@ -1,9 +1,26 @@
 const fs = require('fs');
-const readable = fs.createReadStream('./01-read-file/text.txt', {
-  highWaterMark: 32,
-});
+const path = require('path');
 
-(async () => {
+class FileReader {
+  constructor(fileName = 'text.txt') {
+    this.fullFileName = path.join(__dirname, fileName);
+    this.out = '';
+  }
+
+  readFile() {
+    const readable = fs.createReadStream(this.fullFileName, 'utf-8', {
+      highWaterMark: 32,
+    });
+    readable
+      .on('data', (chunk) => (this.out += chunk))
+      .on('end', () => console.log(this.out));
+  }
+}
+
+const fileReader = new FileReader();
+fileReader.readFile();
+
+/* (async () => {
   let arr = [];
   let totalLength = 0;
   for await (const chunk of readable) {
@@ -11,4 +28,4 @@ const readable = fs.createReadStream('./01-read-file/text.txt', {
     totalLength += chunk.length;
   }
   console.log(Buffer.concat(arr, totalLength).toString());
-})();
+})(); */
