@@ -13,20 +13,25 @@ class FileWriter {
     this.fullFileName = path.join(__dirname, fileName);
     this.writeStream = fs.createWriteStream(this.fullFileName);
     process.on('SIGINT', () => {
-      process.exit();
+      this.exitPr();
     });
     this.welcome =
-      '>> Enter the text to see it in out.txt. To exit - type "exit" or press Ctrl+C\n>> ';
+      '>> Enter something to see it in out.txt. To exit - type "exit" or press Ctrl+C\n>> ';
   }
   readIn() {
     this.rl.question(this.welcome, (answer) => {
       this.welcome = '>> ';
+      if (answer === 'exit') this.exitPr();
       this.writeFile(answer);
     });
   }
   writeFile(text) {
     this.writeStream.write(text + '\n');
     this.readIn();
+  }
+  exitPr() {
+    this.rl.write('Check out out.txt\nGood Luck, Have Fun!');
+    process.exit();
   }
 }
 
