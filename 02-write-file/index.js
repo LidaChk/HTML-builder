@@ -30,7 +30,7 @@ class FileWriter {
     this.readIn();
   }
   exitPr() {
-    this.rl.write('Check out out.txt\nGood Luck, Have Fun!');
+    this.rl.write(`Check out: ${this.fullFileName}\nGood Luck, Have Fun!`);
     process.exit();
   }
 }
