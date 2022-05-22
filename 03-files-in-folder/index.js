@@ -6,9 +6,7 @@ class DirInfo {
   constructor(dir = 'secret-folder') {
     this.dir = 'secret-folder';
     this.fullPath = path.join(__dirname, `${dir}`);
-    process.on('SIGINT', () => {
-      this.exitPr();
-    });
+    process.on('exit', () => process.stdout.write('\nGood Luck, Have Fun!'));
   }
   getDirInfo() {
     fs.readdir(this.fullPath, { withFileTypes: true }, (e, files) => {
@@ -26,10 +24,7 @@ class DirInfo {
       });
     });
   }
-  exitPr() {
-    process.stdout.write('Good Luck, Have Fun!');
-    process.exit();
-  }
+
   bytesToSize(bytes) {
     const sizes = ['bytes', 'kb', 'mb', 'GB', 'TB'];
     if (bytes === 0) return 'n/a';
