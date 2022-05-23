@@ -4,14 +4,21 @@ const process = require('process');
 
 class CopyDir {
   constructor(filesCopy = 'files-copy', files = 'files', subfolder = false) {
+    this.files = files;
+    this.filesCopy = filesCopy;
     this.fullPath = path.join(__dirname, `${files}`);
     this.fullPathCopy = path.join(__dirname, `${filesCopy}`);
     process.on('exit', () =>
-      this.log(`${files} successfully copied to ${filesCopy}\n`)
+      this.log(`End of copy from ${files} to ${filesCopy}\n`)
     );
     this.subfolder = subfolder;
   }
 
+  start() {
+    this.log('___________________________________________\n');
+    this.log(`Start copying from ${this.files} to ${this.filesCopy}\n`);
+    this.cleanFolder().then(() => this.copyDir());
+  }
   copyDir(
     fullPath = this.fullPath,
     fullPathCopy = this.fullPathCopy,
@@ -26,7 +33,7 @@ class CopyDir {
           }\n`
         );
         fspr.readdir(fullPath, { withFileTypes: true }).then((files) => {
-          /* здесь асинхрон бессмыссленен, все равно  будет в очередь записи на диск писаться
+          /* здесь такой асинхрон бессмыссленен
            - но захотелось поиграться */
           (async function (from) {
             for await (const file of files) {
@@ -76,7 +83,16 @@ class CopyDir {
       })}.${new Date().getMilliseconds()} ${message}`
     );
   }
+  cleanFolder(fullPathCopy = this.fullPathCopy) {
+    return fspr
+      .rm(fullPathCopy, { recursive: true, force: true })
+      .catch((err) =>
+        process.stderr.write(
+          `Folder ${fullPathCopy}  does not deleted with error: ${err}\n`
+        )
+      );
+  }
 }
 
 const copyDir = new CopyDir();
-copyDir.copyDir();
+copyDir.start();
