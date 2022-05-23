@@ -1,4 +1,5 @@
 const fspr = require('fs/promises');
+const fs = require('fs');
 const path = require('path');
 const process = require('process');
 
@@ -19,7 +20,8 @@ class CopyDir {
     this.log(
       `\x1b[35m**Start copying from ${this.files} to ${this.filesCopy}**\n`
     );
-    this.cleanFolder().then(() => this.copyDir());
+    this.cleanFolder();
+    this.copyDir();
   }
   copyDir(
     fullPath = this.fullPath,
@@ -96,15 +98,27 @@ class CopyDir {
       })}.${new Date().getMilliseconds()}:\x1b[0m \x1b[31m${message}\x1b[0m`
     );
   }
-  cleanFolder(fullPathCopy = this.fullPathCopy) {
-    return fspr
-      .rm(fullPathCopy, { recursive: true, force: true })
-      .catch((err) => {
-        this.errorLog(
-          `Folder ${fullPathCopy}  does not deleted with error: ${err}\n`
+  cleanFolder(homePath = __dirname, folder = this.filesCopy) {
+    fs.readdir(homePath, { withFileTypes: true }, (err, files) => {
+      files
+        .filter((file) => file.name === folder)
+        .forEach((file) =>
+          fs.rm(
+            path.join(homePath, file.name),
+            { recursive: true, force: true, maxRetries: 30 },
+            (err) => {
+              if (err)
+                this.errorLog(
+                  `Folder ${path.join(
+                    homePath,
+                    folder
+                  )}  does not deleted with error: ${err}\n`
+                );
+              process.exit();
+            }
+          )
         );
-        process.exit();
-      });
+    });
   }
 }
 
