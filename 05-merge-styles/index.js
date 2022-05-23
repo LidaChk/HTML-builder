@@ -1,42 +1,97 @@
 const fspr = require('fs/promises');
-const stat = require('fs').stat;
 const path = require('path');
 const process = require('process');
 
-class createBundle {
-  constructor(bundle = 'bundle.css', source = 'styles', dist = 'project-dist') {
-    this.dir = 'secret-folder';
-    this.fullPath = path.join(__dirname, `${dir}`);
-    process.on('exit', () => process.stdout.write('\nGood Luck, Have Fun!'));
-  }
-  getDirInfo(fullPath = this.fullPath, subfolder = false) {
-    fspr.readdir(fullPath, { withFileTypes: true }).then((files) => {
-      for (const file of files) {
-        if (file.isFile()) {
-          stat(path.join(fullPath, file.name), (err, stats) => {
-            if (!err) {
-              let fname = file.name.split('.');
-              process.stdout.write(
-                `${fname[0]} - ${fname[1]} - ${this.bytesToSize(stats.size)}\n`
-              );
-            }
-          });
-        } else if (subfolder) {
-          process.stdout.write(file.name);
-          this.getDirInfo(path.join(fullPath, file.name));
-        }
-      }
+class CreateBundle {
+  constructor(bundle = 'bundle.css', styles = 'styles', subfolder = false) {
+    this.styles = styles;
+    this.bundle = bundle;
+    this.fullPath = path.join(__dirname, `${styles}`);
+    this.fullNameCopy = path.join(__dirname, `${bundle}`);
+    this.subfolder = subfolder;
+    process.on('exit', () => {
+      this.log(`**End of copy from ${styles} to ${bundle}**\n`);
     });
   }
 
-  bytesToSize(bytes) {
-    const sizes = ['bytes', 'kb', 'mb', 'GB', 'TB'];
-    if (bytes === 0) return `0${sizes[0]}`;
-    const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)), 10);
-    if (i === 0) return `${bytes}${sizes[i]}`;
-    return `${(bytes / 1024 ** i).toFixed(1)}${sizes[i]}`;
+  start() {
+    this.log(`**Start copying from ${this.styles} to ${this.bundle}**\n`);
+    this.CreateBundle();
+  }
+  CreateBundle(
+    fullPath = this.fullPath,
+    fullPathCopy = this.fullPathCopy,
+    subfolder = this.subfolder
+  ) {
+    fspr
+      .mkdir(fullPathCopy, { recursive: true })
+      .then((res) => {
+        this.log(
+          `Folder ${fullPathCopy} ${
+            !res ? 'alredy exists' : 'created successfully'
+          }\n`
+        );
+        fspr.readdir(fullPath, { withFileTypes: true }).then((styles) => {
+          /* здесь такой асинхрон бессмыссленен
+           - но захотелось поиграться */
+          (async function (from) {
+            for await (const file of styles) {
+              if (file.isFile()) {
+                fspr
+                  .copyFile(
+                    path.join(fullPath, file.name),
+                    path.join(fullPathCopy, file.name)
+                  )
+                  .then(() => {
+                    from.log(
+                      `File ${path.join(
+                        fullPath,
+                        file.name
+                      )} copied successfully\n`
+                    );
+                  })
+                  .catch((err) =>
+                    process.stderr.write(
+                      `File ${path.join(
+                        fullPath,
+                        file.name
+                      )} does not copied with error: ${err}\n`
+                    )
+                  );
+              } else if (subfolder) {
+                from.CreateBundle(
+                  path.join(fullPath, file.name),
+                  path.join(fullPathCopy, file.name),
+                  (subfolder = true)
+                );
+              }
+            }
+          })(this);
+        });
+      })
+      .catch((err) =>
+        process.stderr.write(
+          `Folder ${fullPathCopy}  does not created with error: ${err}\n`
+        )
+      );
+  }
+  log(message) {
+    process.stdout.write(
+      `${new Date().toLocaleTimeString([], {
+        hour12: false,
+      })}.${new Date().getMilliseconds()} ${message}`
+    );
+  }
+  cleanFolder(fullPathCopy = this.fullPathCopy) {
+    return fspr
+      .rm(fullPathCopy, { recursive: true, force: true })
+      .catch((err) =>
+        process.stderr.write(
+          `Folder ${fullPathCopy}  does not deleted with error: ${err}\n`
+        )
+      );
   }
 }
 
-const dirInfo = new DirInfo();
-dirInfo.getDirInfo();
+const CreateBundle = new CreateBundle();
+CreateBundle.start();

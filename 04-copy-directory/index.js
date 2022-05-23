@@ -8,15 +8,17 @@ class CopyDir {
     this.filesCopy = filesCopy;
     this.fullPath = path.join(__dirname, `${files}`);
     this.fullPathCopy = path.join(__dirname, `${filesCopy}`);
-    process.on('exit', () =>
-      this.log(`End of copy from ${files} to ${filesCopy}\n`)
-    );
+    process.on('exit', () => {
+      this.log(`\x1b[35m**End of copy from ${files} to ${filesCopy}**\n`);
+    });
     this.subfolder = subfolder;
   }
 
   start() {
-    this.log('___________________________________________\n');
-    this.log(`Start copying from ${this.files} to ${this.filesCopy}\n`);
+    this.log('\n', false);
+    this.log(
+      `\x1b[35m**Start copying from ${this.files} to ${this.filesCopy}**\n`
+    );
     this.cleanFolder().then(() => this.copyDir());
   }
   copyDir(
@@ -52,7 +54,7 @@ class CopyDir {
                     );
                   })
                   .catch((err) =>
-                    process.stderr.write(
+                    this.errorLog(
                       `File ${path.join(
                         fullPath,
                         file.name
@@ -71,26 +73,38 @@ class CopyDir {
         });
       })
       .catch((err) =>
-        process.stderr.write(
+        this.errorLog(
           `Folder ${fullPathCopy}  does not created with error: ${err}\n`
         )
       );
   }
-  log(message) {
-    process.stdout.write(
-      `${new Date().toLocaleTimeString([], {
+  log(message, timeFlg = true) {
+    if (timeFlg) {
+      process.stdout.write(
+        `\x1b[32m${new Date().toLocaleTimeString([], {
+          hour12: false,
+        })}.${new Date().getMilliseconds()}: ${message}\x1b[0m`
+      );
+    } else {
+      process.stdout.write(`\x1b[32m${message}\x1b[0m`);
+    }
+  }
+  errorLog(message) {
+    process.stderr.write(
+      `\x1b[41m\x1b[37m${new Date().toLocaleTimeString([], {
         hour12: false,
-      })}.${new Date().getMilliseconds()} ${message}`
+      })}.${new Date().getMilliseconds()}:\x1b[0m \x1b[31m${message}\x1b[0m`
     );
   }
   cleanFolder(fullPathCopy = this.fullPathCopy) {
     return fspr
       .rm(fullPathCopy, { recursive: true, force: true })
-      .catch((err) =>
-        process.stderr.write(
+      .catch((err) => {
+        this.errorLog(
           `Folder ${fullPathCopy}  does not deleted with error: ${err}\n`
-        )
-      );
+        );
+        process.exit();
+      });
   }
 }
 

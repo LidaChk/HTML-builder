@@ -4,6 +4,7 @@ const readline = require('readline');
 
 class FileWriter {
   constructor(fileName = 'out.txt') {
+    this.fileName = 'out.txt';
     this.stdout = process.stdout;
     this.stdin = process.stdin;
     this.rl = readline.createInterface({
@@ -15,12 +16,17 @@ class FileWriter {
     process.on('SIGINT', () => {
       this.exitPr();
     });
+    process.on('exit', () => {
+      process.stdout.write(
+        `\x1b[35mCheck out file: ${this.fileName}\nGood Luck, Have Fun!\n\x1b[0m`
+      );
+    });
     this.welcome =
-      '>> Enter something to see it in out.txt. To exit - type "exit" or press Ctrl+C\n>> ';
+      '\x1b[35m\nEnter something to see it in out.txt. To exit - type "exit" or press Ctrl+C\n>>\x1b[32m ';
   }
   readIn() {
     this.rl.question(this.welcome, (answer) => {
-      this.welcome = '>> ';
+      this.welcome = '\x1b[35m>> \x1b[32m';
       if (answer === 'exit') this.exitPr();
       this.writeFile(answer);
     });
@@ -30,7 +36,6 @@ class FileWriter {
     this.readIn();
   }
   exitPr() {
-    this.rl.write(`Check out: ${this.fullFileName}\nGood Luck, Have Fun!`);
     process.exit();
   }
 }
