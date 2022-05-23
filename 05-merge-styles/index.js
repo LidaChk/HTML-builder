@@ -16,7 +16,7 @@ class CreateBundle {
     this.fullNameCopy = path.join(__dirname, dist, `${bundle}`);
     this.subfolder = subfolder;
     process.on('exit', () => {
-      this.log(`\x1b[35m**End of copy this ${styles} to ${bundle}**\n\x1b[0m`);
+      this.log(`\x1b[35m**End of copy ${styles} to ${bundle}**\n\x1b[0m`);
     });
     this.writeStream = fs.createWriteStream(this.fullNameCopy);
   }
@@ -24,7 +24,7 @@ class CreateBundle {
   start() {
     this.log('\n', false);
     this.log(
-      `\x1b[35m**Start copying this ${this.styles} to ${this.bundle}**\n\x1b[0m`
+      `\x1b[35m**Start copying ${this.styles} to ${this.bundle}**\n\x1b[0m`
     );
     this.CreateBundle();
   }
