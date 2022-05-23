@@ -1,3 +1,4 @@
+/d:/GitHub/HTML-builder/06-build-page/project-dist
 /d:/GitHub/HTML-builder/05-merge-styles/test-files
 /d:/GitHub/HTML-builder/05-merge-styles/styles
 /d:/GitHub/HTML-builder/05-merge-styles/project-dist
@@ -112,3 +113,19 @@ dist
 .tern-port
 02-write-file/out.txt
 05-merge-styles/project-dist/bundle.css
+06-build-page/project-dist/style.css
+06-build-page/project-dist/assets/fonts/Karolina-Regular.woff2
+06-build-page/project-dist/assets/img/footer.jpg
+06-build-page/project-dist/assets/img/header.jpg
+06-build-page/project-dist/assets/img/item1.jpg
+06-build-page/project-dist/assets/img/item2.jpg
+06-build-page/project-dist/assets/img/item3.jpg
+06-build-page/project-dist/assets/img/wildlife-logo.jpg
+06-build-page/project-dist/assets/svg/arrow-left.svg
+06-build-page/project-dist/assets/svg/arrow-right.svg
+06-build-page/project-dist/assets/svg/facebook.svg
+06-build-page/project-dist/assets/svg/instagram.svg
+06-build-page/project-dist/assets/svg/logo.svg
+06-build-page/project-dist/assets/svg/pinterest.svg
+06-build-page/project-dist/assets/svg/search.svg
+06-build-page/project-dist/assets/svg/telegram.svg

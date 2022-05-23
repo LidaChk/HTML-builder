@@ -13,6 +13,7 @@ class CopyDir {
       this.log(`\x1b[35m**End of copy from ${files} to ${filesCopy}**\n`);
     });
     this.subfolder = subfolder;
+    this.mkdir = 0;
   }
 
   start() {
@@ -20,8 +21,20 @@ class CopyDir {
     this.log(
       `\x1b[35m**Start copying from ${this.files} to ${this.filesCopy}**\n`
     );
-    this.cleanFolder();
-    this.copyDir();
+    fs.rm(
+      this.fullPathCopy,
+      { recursive: true, force: true, maxRetries: 30 },
+      (err) => {
+        if (err) {
+          this.errorLog(
+            `Folder ${this.fullPathCopy}  does not deleted with error: ${err}\n`
+          );
+          process.exit();
+        } else {
+          this.copyDir();
+        }
+      }
+    );
   }
   copyDir(
     fullPath = this.fullPath,
@@ -74,11 +87,16 @@ class CopyDir {
           })(this);
         });
       })
-      .catch((err) =>
-        this.errorLog(
-          `Folder ${fullPathCopy}  does not created with error: ${err}\n`
-        )
-      );
+      .catch((err) => {
+        this.mkdir += 1;
+        if (this.mkdir > 20) {
+          this.errorLog(
+            `Folder ${fullPathCopy}  does not created with error: ${err}\n`
+          );
+        } else {
+          this.copyDir(fullPath, fullPathCopy, subfolder);
+        }
+      });
   }
   log(message, timeFlg = true) {
     if (timeFlg) {
