@@ -1,21 +1,31 @@
+const fs = require('fs');
 const fspr = require('fs/promises');
 const path = require('path');
 const process = require('process');
 
 class CreateBundle {
-  constructor(bundle = 'bundle.css', styles = 'styles', subfolder = false) {
+  constructor(
+    bundle = 'bundle.css',
+    dist = 'project-dist',
+    styles = 'styles',
+    subfolder = false
+  ) {
     this.styles = styles;
     this.bundle = bundle;
     this.fullPath = path.join(__dirname, `${styles}`);
-    this.fullNameCopy = path.join(__dirname, `${bundle}`);
+    this.fullNameCopy = path.join(__dirname, dist, `${bundle}`);
     this.subfolder = subfolder;
     process.on('exit', () => {
-      this.log(`**End of copy from ${styles} to ${bundle}**\n`);
+      this.log(`\x1b[35m**End of copy this ${styles} to ${bundle}**\n\x1b[0m`);
     });
+    this.writeStream = fs.createWriteStream(this.fullNameCopy);
   }
 
   start() {
-    this.log(`**Start copying from ${this.styles} to ${this.bundle}**\n`);
+    this.log('\n', false);
+    this.log(
+      `\x1b[35m**Start copying this ${this.styles} to ${this.bundle}**\n\x1b[0m`
+    );
     this.CreateBundle();
   }
   CreateBundle(
@@ -24,74 +34,47 @@ class CreateBundle {
     subfolder = this.subfolder
   ) {
     fspr
-      .mkdir(fullPathCopy, { recursive: true })
-      .then((res) => {
-        this.log(
-          `Folder ${fullPathCopy} ${
-            !res ? 'alredy exists' : 'created successfully'
-          }\n`
-        );
-        fspr.readdir(fullPath, { withFileTypes: true }).then((styles) => {
-          /* здесь такой асинхрон бессмыссленен
-           - но захотелось поиграться */
-          (async function (from) {
-            for await (const file of styles) {
-              if (file.isFile()) {
-                fspr
-                  .copyFile(
-                    path.join(fullPath, file.name),
-                    path.join(fullPathCopy, file.name)
-                  )
-                  .then(() => {
-                    from.log(
-                      `File ${path.join(
-                        fullPath,
-                        file.name
-                      )} copied successfully\n`
-                    );
-                  })
-                  .catch((err) =>
-                    process.stderr.write(
-                      `File ${path.join(
-                        fullPath,
-                        file.name
-                      )} does not copied with error: ${err}\n`
-                    )
-                  );
-              } else if (subfolder) {
-                from.CreateBundle(
-                  path.join(fullPath, file.name),
-                  path.join(fullPathCopy, file.name),
-                  (subfolder = true)
-                );
-              }
-            }
-          })(this);
-        });
+      .readdir(fullPath, { withFileTypes: true })
+      .then((styles) => {
+        for (const file of styles) {
+          if (file.isFile() && path.extname(file.name) === '.css') {
+            fs.createReadStream(path.join(fullPath, file.name)).pipe(
+              this.writeStream
+            );
+            this.log(`File ${file.name} copied to ${this.bundle}\n`);
+          } else if (!file.isFile() && subfolder) {
+            this.CreateBundle(
+              path.join(fullPath, file.name),
+              fullPathCopy,
+              (subfolder = true)
+            );
+          }
+        }
       })
       .catch((err) =>
-        process.stderr.write(
-          `Folder ${fullPathCopy}  does not created with error: ${err}\n`
-        )
+        this.errorLog(`Read ${fullPath} fails with error: ${err}\n`)
       );
   }
-  log(message) {
-    process.stdout.write(
-      `${new Date().toLocaleTimeString([], {
+
+  log(message, timeFlg = true) {
+    if (timeFlg) {
+      process.stdout.write(
+        `\x1b[32m${new Date().toLocaleTimeString([], {
+          hour12: false,
+        })}.${new Date().getMilliseconds()}: ${message}\x1b[0m`
+      );
+    } else {
+      process.stdout.write(`\x1b[32m${message}\x1b[0m`);
+    }
+  }
+  errorLog(message) {
+    process.stderr.write(
+      `\x1b[41m\x1b[37m${new Date().toLocaleTimeString([], {
         hour12: false,
-      })}.${new Date().getMilliseconds()} ${message}`
+      })}.${new Date().getMilliseconds()}:\x1b[0m \x1b[31m${message}\x1b[0m`
     );
-  }
-  cleanFolder(fullPathCopy = this.fullPathCopy) {
-    return fspr
-      .rm(fullPathCopy, { recursive: true, force: true })
-      .catch((err) =>
-        process.stderr.write(
-          `Folder ${fullPathCopy}  does not deleted with error: ${err}\n`
-        )
-      );
   }
 }
 
-const CreateBundle = new CreateBundle();
-CreateBundle.start();
+const createBundle = new CreateBundle();
+createBundle.start();

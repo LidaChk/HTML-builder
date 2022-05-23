@@ -1,3 +1,7 @@
+/d:/GitHub/HTML-builder/05-merge-styles/test-files
+/d:/GitHub/HTML-builder/05-merge-styles/styles
+/d:/GitHub/HTML-builder/05-merge-styles/project-dist
+/d:/GitHub/HTML-builder/05-merge-styles/styles
 /d:/GitHub/HTML-builder/04-copy-directory/files2-copy
 /d:/GitHub/HTML-builder/04-copy-directory/files2
 /d:/GitHub/HTML-builder/04-copy-directory/files-copy
@@ -107,3 +111,4 @@ dist
 # TernJS port file
 .tern-port
 02-write-file/out.txt
+05-merge-styles/project-dist/bundle.css
