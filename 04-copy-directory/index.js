@@ -26,37 +26,41 @@ class CopyDir {
           }\n`
         );
         fspr.readdir(fullPath, { withFileTypes: true }).then((files) => {
-          for (const file of files) {
-            if (file.isFile()) {
-              fspr
-                .copyFile(
-                  path.join(fullPath, file.name),
-                  path.join(fullPathCopy, file.name)
-                )
-                .then(() => {
-                  this.log(
-                    `File ${path.join(
-                      fullPath,
-                      file.name
-                    )} copied successfully\n`
-                  );
-                })
-                .catch((err) =>
-                  process.stderr.write(
-                    `File ${path.join(
-                      fullPath,
-                      file.name
-                    )} does not copied with error: ${err}\n`
+          /* здесь асинхрон бессмыссленен, все равно  будет в очередь записи на диск писаться
+           - но захотелось поиграться */
+          (async function (from) {
+            for await (const file of files) {
+              if (file.isFile()) {
+                fspr
+                  .copyFile(
+                    path.join(fullPath, file.name),
+                    path.join(fullPathCopy, file.name)
                   )
+                  .then(() => {
+                    from.log(
+                      `File ${path.join(
+                        fullPath,
+                        file.name
+                      )} copied successfully\n`
+                    );
+                  })
+                  .catch((err) =>
+                    process.stderr.write(
+                      `File ${path.join(
+                        fullPath,
+                        file.name
+                      )} does not copied with error: ${err}\n`
+                    )
+                  );
+              } else if (subfolder) {
+                from.copyDir(
+                  path.join(fullPath, file.name),
+                  path.join(fullPathCopy, file.name),
+                  (subfolder = true)
                 );
-            } else if (subfolder) {
-              this.copyDir(
-                path.join(fullPath, file.name),
-                path.join(fullPathCopy, file.name),
-                (subfolder = true)
-              );
+              }
             }
-          }
+          })(this);
         });
       })
       .catch((err) =>
@@ -76,5 +80,3 @@ class CopyDir {
 
 const copyDir = new CopyDir();
 copyDir.copyDir();
-const copyDir2 = new CopyDir('files2-copy', 'files2', true);
-copyDir2.copyDir();
