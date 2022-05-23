@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const process = require('process');
 
 class FileReader {
   constructor(fileName = 'text.txt') {
@@ -11,21 +12,9 @@ class FileReader {
     const readable = fs.createReadStream(this.fullFileName, 'utf-8', {
       highWaterMark: 32,
     });
-    readable
-      .on('data', (chunk) => (this.out += chunk))
-      .on('end', () => console.log(this.out));
+    readable.on('data', (chunk) => process.stdout.write(chunk));
   }
 }
 
 const fileReader = new FileReader();
 fileReader.readFile();
-
-/* (async () => {
-  let arr = [];
-  let totalLength = 0;
-  for await (const chunk of readable) {
-    arr.push(chunk);
-    totalLength += chunk.length;
-  }
-  console.log(Buffer.concat(arr, totalLength).toString());
-})(); */
