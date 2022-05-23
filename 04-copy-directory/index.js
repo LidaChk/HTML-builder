@@ -3,7 +3,7 @@ const path = require('path');
 const process = require('process');
 
 class CopyDir {
-  constructor(filesCopy = 'files-copy', files = 'files', subfolder = true) {
+  constructor(filesCopy = 'files-copy', files = 'files', subfolder = false) {
     this.fullPath = path.join(__dirname, `${files}`);
     this.fullPathCopy = path.join(__dirname, `${filesCopy}`);
     process.on('exit', () =>
