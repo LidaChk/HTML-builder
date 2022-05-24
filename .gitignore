@@ -111,7 +111,6 @@ dist
 
 # TernJS port file
 .tern-port
-02-write-file/out.txt
 05-merge-styles/project-dist/bundle.css
 06-build-page/project-dist/style.css
 06-build-page/project-dist/assets/fonts/Karolina-Regular.woff2

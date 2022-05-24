@@ -75,30 +75,71 @@ class CreateDist {
       let code = chunk.toString();
       let r = new RegExp(/\{\{(.*?)\}\}/g);
       let params = [...code.matchAll(r)];
-
-      params.map((param) =>
-        param.push(
-          fs.createReadStream(path.join(fullFilePath, `${param[1]}.html`))
-        )
+      let asynCounter = 0;
+      const writeCode = () => {
+        asynCounter += 1;
+        if (asynCounter >= params.length) {
+          writestream.write(`${code}\n`);
+          this.log(
+            `\x1b[33m**Bulding ${path.join(this.dist, 'index.html')} from  ${
+              this.components
+            } finished**\n\x1b[0m`
+          );
+        }
+      };
+      params.forEach((param) =>
+        fspr
+          .access(path.join(fullFilePath, `${param[1]}.html`))
+          .then(() =>
+            fs
+              .createReadStream(path.join(fullFilePath, `${param[1]}.html`))
+              .on('data', (data) => {
+                this.log(`\x1b[33mFile ${param[1]}.html readed\n\x1b[0m`);
+                code = code.replace(new RegExp(param[0], 'g'), data);
+                this.log(`\x1b[33mParam ${param[1]} replaced.\n`);
+                writeCode();
+              })
+          )
+          .catch((err) => {
+            this.log(`\x1b[43m\x1b[32mInfo: \x1b[0m\x1b[33m${err}\n`);
+            code = code.replace(new RegExp(param[0], 'g'), '');
+            this.log(`\x1b[33mParam ${param[1]} replaced with empty string\n`);
+            writeCode();
+          })
       );
 
+      /*       const next = (i) => {
+        i += 1;
+        if (i < params.length) {
+          getParam(i);
+        } else {
+          writestream.write(`${code}\n`);
+          this.log(
+            `\x1b[33m**Bulding ${path.join(this.dist, 'index.html')} from  ${
+              this.components
+            } finished**\n\x1b[0m`
+          );
+          return true;
+        }
+      };
       const getParam = (i = 0) => {
+        this.errorLog(JSON.stringify(params[i][2]) + '\n');
+        params[i][2].on('error', (err) => {
+          this.log(`\x1b[43m\x1b[32mInfo: \x1b[0m\x1b[33m${err}\n`);
+          code = code.replace(new RegExp(params[i][0], 'g'), '');
+          this.log(
+            `\x1b[33mParam ${params[i][0]} replaced with empty string\n`
+          );
+          next(i);
+        });
         params[i][2].on('data', (data) => {
           this.log(`\x1b[33mFile ${params[i][1]}.html readed\n\x1b[0m`);
           code = code.replace(new RegExp(params[i][0], 'g'), data);
-          i += 1;
-          if (i < params.length) getParam(i);
-          else {
-            writestream.write(`${code}\n`);
-            this.log(
-              `\x1b[33m**Bulding ${path.join(this.dist, 'index.html')} from  ${
-                this.components
-              } finished**\n\x1b[0m`
-            );
-          }
+          this.log(`\x1b[33m Param ${params[i][0]} replaced.\n`);
+          next(i);
         });
       };
-      getParam(0);
+      getParam(0); */
     });
   }
   CreateFolder(fullPath) {
