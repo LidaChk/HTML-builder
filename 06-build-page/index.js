@@ -135,7 +135,6 @@ class CreateDist {
             a.name.indexOf('footer')
         );
         for (const file of styles) {
-          console.log(file);
           if (file.isFile() && path.extname(file.name) === '.css') {
             fs.createReadStream(path.join(fullPath, file.name)).pipe(
               writeStream
