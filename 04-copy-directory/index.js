@@ -14,7 +14,7 @@ class CopyDir {
     this.fullPath = path.join(__dirname, `${files}`);
     this.fullPathCopy = path.join(__dirname, `${filesCopy}`);
     process.on('exit', () => {
-      this.log(`\x1b[35m**End of copy from ${files} to ${filesCopy}**\n`);
+      this.log(`\x1b[35m**End of copy this ${files} to ${filesCopy}**\n`);
     });
     this.subfolder = subfolder;
     this.mkdir = 0;
@@ -23,7 +23,7 @@ class CopyDir {
   start() {
     this.log('\n', false);
     this.log(
-      `\x1b[35m**Start copying from ${this.files} to ${this.filesCopy}**\n`
+      `\x1b[35m**Start copying this ${this.files} to ${this.filesCopy}**\n`
     );
     fs.rm(
       this.fullPathCopy,
@@ -54,41 +54,37 @@ class CopyDir {
           }\n`
         );
         fspr.readdir(fullPath, { withFileTypes: true }).then((files) => {
-          /* здесь такой асинхрон бессмыссленен
-           - но захотелось поиграться */
-          (async function (from) {
-            for await (const file of files) {
-              if (file.isFile()) {
-                fspr
-                  .copyFile(
-                    path.join(fullPath, file.name),
-                    path.join(fullPathCopy, file.name)
-                  )
-                  .then(() => {
-                    from.log(
-                      `File ${path.join(
-                        fullPath,
-                        file.name
-                      )} copied successfully\n`
-                    );
-                  })
-                  .catch((err) =>
-                    this.errorLog(
-                      `File ${path.join(
-                        fullPath,
-                        file.name
-                      )} does not copied with error: ${err}\n`
-                    )
-                  );
-              } else if (subfolder) {
-                from.copyDir(
+          for (const file of files) {
+            if (file.isFile()) {
+              fspr
+                .copyFile(
                   path.join(fullPath, file.name),
-                  path.join(fullPathCopy, file.name),
-                  (subfolder = true)
+                  path.join(fullPathCopy, file.name)
+                )
+                .then(() => {
+                  this.log(
+                    `File ${path.join(
+                      fullPath,
+                      file.name
+                    )} copied successfully\n`
+                  );
+                })
+                .catch((err) =>
+                  this.errorLog(
+                    `File ${path.join(
+                      fullPath,
+                      file.name
+                    )} does not copied with error: ${err}\n`
+                  )
                 );
-              }
+            } else if (subfolder) {
+              this.copyDir(
+                path.join(fullPath, file.name),
+                path.join(fullPathCopy, file.name),
+                (subfolder = true)
+              );
             }
-          })(this);
+          }
         });
       })
       .catch((err) => {
