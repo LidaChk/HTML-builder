@@ -11,10 +11,14 @@ class DirInfo {
   constructor(dir = 'secret-folder') {
     this.dir = 'secret-folder';
     this.fullPath = path.join(__dirname, `${dir}`);
-    process.on('exit', () => this.log('\x1b[35m** Good Luck, Have Fun! **\n'));
+    process.on('exit', () =>
+      this.log(
+        '\x1b[35m\n** 1 KiB = 1024 byte **\n** Good Luck, Have Fun! **\n'
+      )
+    );
   }
   getDirInfo(fullPath = this.fullPath, subfolder = false) {
-    this.log(`\n\x1b[35m Folder ${this.dir} contains:\n`);
+    this.log(`\n\x1b[35mFolder ${this.dir} contains:\n`);
     fspr.readdir(fullPath, { withFileTypes: true }).then((files) => {
       for (const file of files) {
         if (file.isFile()) {
@@ -22,9 +26,9 @@ class DirInfo {
             if (!err) {
               let fname = path.parse(file.name);
               this.log(
-                `${fname.name}\t- ${fname.ext.slice(1)}\t- ${this.bytesToSize(
-                  stats.size
-                )}\n`
+                `${fname.name}\t- ${fname.ext.slice(
+                  1
+                )}\t- \x1b[36m${this.bytesToSize(stats.size)}\n`
               );
             }
           });
@@ -37,11 +41,11 @@ class DirInfo {
   }
 
   bytesToSize(bytes) {
-    const sizes = ['bytes', 'kb', 'mb', 'GB', 'TB'];
-    if (bytes === 0) return `0${sizes[0]}`;
+    const sizes = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB'];
+    if (bytes === 0) return `0\x1b[32m ${sizes[0]}`;
     const i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)), 10);
-    if (i === 0) return `${bytes}${sizes[i]}`;
-    return `${(bytes / 1024 ** i).toFixed(1)}${sizes[i]}`;
+    if (i === 0) return `${bytes}\x1b[32m ${sizes[i]}`;
+    return `${(bytes / 1024 ** i).toFixed(1)}\x1b[32m ${sizes[i]}`;
   }
   log(message) {
     process.stdout.write(`\x1b[32m${message}\x1b[0m`);
