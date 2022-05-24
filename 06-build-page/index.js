@@ -127,7 +127,15 @@ class CreateDist {
     fspr
       .readdir(fullPath, { withFileTypes: true })
       .then((styles) => {
+        styles.sort(
+          (a, b) =>
+            b.name.indexOf('header') -
+            a.name.indexOf('header') -
+            b.name.indexOf('footer') +
+            a.name.indexOf('footer')
+        );
         for (const file of styles) {
+          console.log(file);
           if (file.isFile() && path.extname(file.name) === '.css') {
             fs.createReadStream(path.join(fullPath, file.name)).pipe(
               writeStream
