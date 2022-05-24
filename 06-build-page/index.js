@@ -42,22 +42,60 @@ class CreateDist {
         } else {
           this.CreateFolder(this.fullPathDist).then(() => {
             this.CreateBundle(
-              path.join(__dirname, this.styles),
+              path.join(this.homePath, this.styles),
               fs.createWriteStream(path.join(this.fullPathDist, 'style.css'))
             );
             this.copyFolder(
-              path.join(__dirname, this.assets),
+              path.join(this.homePath, this.assets),
               path.join(this.fullPathDist, this.assets),
               true,
               true
             );
-            this.CreateHtml();
+            this.createHtml(
+              fs.createReadStream(path.join(this.homePath, this.template)),
+              path.join(this.homePath, this.components),
+              fs.createWriteStream(path.join(this.fullPathDist, 'index.html'))
+            );
           });
         }
       }
     );
   }
-  createHtml() {}
+  createHtml(readstream, fullFilePath, writestream) {
+    this.log(
+      `\x1b[33m**Start bulding ${path.join(this.dist, 'index.html')} from  ${
+        this.components
+      }**\n\x1b[0m`
+    );
+    readstream.on('data', (chunk) => {
+      let code = chunk.toString();
+      let r = new RegExp(/\{\{(.*?)\}\}/g);
+      let params = [...code.matchAll(r)];
+
+      params.map((param) =>
+        param.push(
+          fs.createReadStream(path.join(fullFilePath, `${param[1]}.html`))
+        )
+      );
+
+      const getParam = (i = 0, code) => {
+        params[i][2].on('data', (data) => {
+          code = code.replace(new RegExp(params[i][0], 'g'), data);
+          i += 1;
+          if (i < params.length) getParam(i, code);
+          else {
+            writestream.write(`${code}\n`);
+            this.log(
+              `\x1b[33m**Bulding ${path.join(this.dist, 'index.html')} from  ${
+                this.components
+              } finished**\n\x1b[0m`
+            );
+          }
+        });
+      };
+      getParam(0, code);
+    });
+  }
   CreateFolder(fullPath) {
     return fspr
       .mkdir(fullPath, { recursive: true })

@@ -32,7 +32,7 @@ class FileWriter {
     });
   }
   writeFile(text) {
-    this.writeStream.write(text + '\n');
+    this.writeStream.write(`${text}\n`);
     this.readIn();
   }
   exitPr() {
