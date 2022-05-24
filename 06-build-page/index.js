@@ -144,14 +144,14 @@ class CreateDist {
         );
         for (const file of styles) {
           if (file.isFile() && path.extname(file.name) === '.css') {
-            fs.createReadStream(path.join(fullPath, file.name)).pipe(
-              writeStream
-            );
-            this.log(
-              `\x1b[36mFile ${file.name} copied to ${path.join(
-                this.dist,
-                'style.css'
-              )}\n`
+            fs.createReadStream(path.join(fullPath, file.name)).on(
+              'data',
+              (data) =>
+                writeStream.write(
+                  `\n/****** ${file.name} *******/\n\n${data}\n\n`,
+                  'utf8',
+                  () => this.log(`File ${file.name} copied to ${this.styles}\n`)
+                )
             );
           } else if (!file.isFile() && subfolder) {
             this.CreateBundle(

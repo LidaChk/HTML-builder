@@ -42,10 +42,15 @@ class CreateBundle {
       .then((styles) => {
         for (const file of styles) {
           if (file.isFile() && path.extname(file.name) === '.css') {
-            fs.createReadStream(path.join(fullPath, file.name)).pipe(
-              this.writeStream
+            fs.createReadStream(path.join(fullPath, file.name)).on(
+              'data',
+              (data) =>
+                this.writeStream.write(
+                  `\n/****** ${file.name} *******/\n\n${data}\n\n`,
+                  'utf8',
+                  () => this.log(`File ${file.name} copied to ${this.bundle}\n`)
+                )
             );
-            this.log(`File ${file.name} copied to ${this.bundle}\n`);
           } else if (!file.isFile() && subfolder) {
             this.CreateBundle(
               path.join(fullPath, file.name),
