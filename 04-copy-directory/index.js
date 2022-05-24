@@ -1,3 +1,7 @@
+/*
+  node 04-copy-directory
+*/
+
 const fspr = require('fs/promises');
 const fs = require('fs');
 const path = require('path');

@@ -1,3 +1,6 @@
+/*
+  node 06-build-page
+ */
 const fs = require('fs');
 const fspr = require('fs/promises');
 const path = require('path');
@@ -68,6 +71,7 @@ class CreateDist {
       }**\n\x1b[0m`
     );
     readstream.on('data', (chunk) => {
+      this.log(`\x1b[33mFile ${this.template} readed\n\x1b[0m`);
       let code = chunk.toString();
       let r = new RegExp(/\{\{(.*?)\}\}/g);
       let params = [...code.matchAll(r)];
@@ -78,11 +82,12 @@ class CreateDist {
         )
       );
 
-      const getParam = (i = 0, code) => {
+      const getParam = (i = 0) => {
         params[i][2].on('data', (data) => {
+          this.log(`\x1b[33mFile ${params[i][1]}.html readed\n\x1b[0m`);
           code = code.replace(new RegExp(params[i][0], 'g'), data);
           i += 1;
-          if (i < params.length) getParam(i, code);
+          if (i < params.length) getParam(i);
           else {
             writestream.write(`${code}\n`);
             this.log(
@@ -93,7 +98,7 @@ class CreateDist {
           }
         });
       };
-      getParam(0, code);
+      getParam(0);
     });
   }
   CreateFolder(fullPath) {
@@ -212,9 +217,9 @@ class CreateDist {
   log(message, timeFlg = true) {
     if (timeFlg) {
       process.stdout.write(
-        `\x1b[32m${new Date().toLocaleTimeString([], {
+        `\x1b[0m${new Date().toLocaleTimeString([], {
           hour12: false,
-        })}.${new Date().getMilliseconds()}: ${message}\x1b[0m`
+        })}.${new Date().getMilliseconds()}:\x1b[32m ${message}\x1b[0m`
       );
     } else {
       process.stdout.write(`\x1b[32m${message}\x1b[0m`);

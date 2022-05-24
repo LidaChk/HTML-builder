@@ -1,3 +1,7 @@
+/*
+ node 05-merge-styles
+*/
+
 const fs = require('fs');
 const fspr = require('fs/promises');
 const path = require('path');
