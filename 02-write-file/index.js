@@ -8,7 +8,7 @@ const readline = require('readline');
 
 class FileWriter {
   constructor(fileName = 'out.txt') {
-    this.fileName = 'out.txt';
+    this.fileName = fileName;
     this.stdout = process.stdout;
     this.stdin = process.stdin;
     this.rl = readline.createInterface({

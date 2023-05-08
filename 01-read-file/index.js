@@ -7,7 +7,7 @@ const process = require('process');
 
 class FileReader {
   constructor(fileName = 'text.txt') {
-    this.fileName = 'text.txt';
+    this.fileName = fileName;
     this.fullFileName = path.join(__dirname, fileName);
     this.out = '';
   }

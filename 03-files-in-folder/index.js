@@ -9,7 +9,7 @@ const process = require('process');
 
 class DirInfo {
   constructor(dir = 'secret-folder') {
-    this.dir = 'secret-folder';
+    this.dir = dir;
     this.fullPath = path.join(__dirname, `${dir}`);
     process.on('exit', () =>
       this.log(
